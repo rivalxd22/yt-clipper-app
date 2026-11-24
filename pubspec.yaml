@@ -1,32 +1,23 @@
-name: Build Android APK
+name: yt_clipper_app
+description: Viral YouTube Stream Clipper
+publish_to: 'none'
+version: 1.0.0+1
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+environment:
+  sdk: '>=3.0.0 <4.0.0'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-      - name: Create Android Project Files
-        run: flutter create . --platforms=android
-      - name: Fix Gradle & Permissions
-        run: |
-          sed -i 's/<application/<uses-permission android:name="android.permission.INTERNET"\/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"\/>\n    <application/' android/app/src/main/AndroidManifest.xml
-          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/' android/app/build.gradle.kts || true
-          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/' android/app/build.gradle || true
-          sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "26.1.10909125"/' android/app/build.gradle.kts || true
-          sed -i 's/ndkVersion flutter.ndkVersion/ndkVersion "26.1.10909125"/' android/app/build.gradle || true
-      - name: Build Debug APK
-        run: flutter build apk --debug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: SpeedClip-APK
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.1
+  path_provider: ^2.1.2
+  gal: ^2.3.0
+  youtube_player_flutter: ^9.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  

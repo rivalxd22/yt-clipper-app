@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:gal/gal.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-void main() => runApp(const MaterialApp(
+void main() => runApp( MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
       home: HomeScreen(),

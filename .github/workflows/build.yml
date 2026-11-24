@@ -18,8 +18,12 @@ jobs:
       - name: Fix Gradle & Permissions
         run: |
           sed -i 's/<application/<uses-permission android:name="android.permission.INTERNET"\/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"\/>\n    <application/' android/app/src/main/AndroidManifest.xml
+          sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 24/' android/app/build.gradle.kts || true
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 24/' android/app/build.gradle || true
           sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "26.1.10909125"/' android/app/build.gradle.kts || true
           sed -i 's/ndkVersion flutter.ndkVersion/ndkVersion "26.1.10909125"/' android/app/build.gradle || true
+          sed -i 's/com.android.application" version "[^"]*"/com.android.application" version "8.6.0"/' android/settings.gradle.kts || true
+          sed -i 's/com.android.application" version "[^"]*"/com.android.application" version "8.6.0"/' android/settings.gradle || true
       - name: Build Debug APK
         run: flutter build apk --debug
       - name: Upload APK

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:gal/gal.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() => runApp(const MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -21,8 +21,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _urlController = TextEditingController();
 
+  String? _extractVideoId(String url) {
+    final regExp = RegExp(
+      r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})',
+    );
+    final match = regExp.firstMatch(url);
+    return match?.group(1);
+  }
+
   void _openEditor() {
-    final videoId = YoutubePlayer.convertUrlToId(_urlController.text.trim());
+    final videoId = _extractVideoId(_urlController.text.trim());
     if (videoId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Valid YouTube link paste karein!')),
@@ -84,42 +92,30 @@ class EditorScreen extends StatefulWidget {
 }
 
 class _EditorScreenState extends State<EditorScreen> {
-  late YoutubePlayerController _ytController;
-  
-  // Timeline seconds
+  late final WebViewController _webController;
+
   double _startSec = 0;
   double _endSec = 15;
-  double _maxSec = 300;
+  final double _maxSec = 600;
 
-  // Draggable Boxes (Normalized 0.0 to 1.0)
   Offset camPos = const Offset(0.05, 0.05);
   Size camSize = const Size(0.30, 0.35);
 
   Offset screenPos = const Offset(0.35, 0.10);
   Size screenSize = const Size(0.60, 0.80);
 
-  String _camPosition = 'top'; // 'top' or 'bottom'
-  String _captionStyle = 'speed'; // 'speed', 'hormozi', 'none'
+  String _camPosition = 'top';
+  String _captionStyle = 'speed';
   bool _isProcessing = false;
 
-  // Aapka Live Render Server URL
   final String backendUrl = "https://yt-clipper-backend-baf3.onrender.com/process-clip";
 
   @override
   void initState() {
     super.initState();
-    _ytController = YoutubePlayerController(
-      initialVideoId: widget.videoId,
-      flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
-    )..addListener(() {
-        final dur = _ytController.metadata.duration.inSeconds.toDouble();
-        if (dur > 0 && dur != _maxSec) {
-          setState(() {
-            _maxSec = dur;
-            if (_endSec > dur) _endSec = dur;
-          });
-        }
-      });
+    _webController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse('https://www.youtube.com/embed/${widget.videoId}?autoplay=1'));
   }
 
   Future<void> _generateClip() async {
@@ -176,7 +172,6 @@ class _EditorScreenState extends State<EditorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Video + Draggable Boxes Overlay
             LayoutBuilder(
               builder: (context, constraints) {
                 final w = constraints.maxWidth;
@@ -186,8 +181,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   height: h,
                   child: Stack(
                     children: [
-                      YoutubePlayer(controller: _ytController),
-                      // Red Box: Facecam
+                      WebViewWidget(controller: _webController),
                       Positioned(
                         left: camPos.dx * w,
                         top: camPos.dy * h,
@@ -213,7 +207,6 @@ class _EditorScreenState extends State<EditorScreen> {
                           ),
                         ),
                       ),
-                      // Blue Box: Main Screen
                       Positioned(
                         left: screenPos.dx * w,
                         top: screenPos.dy * h,
@@ -255,7 +248,6 @@ class _EditorScreenState extends State<EditorScreen> {
                   _startSec = v.start;
                   _endSec = v.end;
                 });
-                _ytController.seekTo(Duration(seconds: v.start.toInt()));
               },
             ),
             const Divider(),

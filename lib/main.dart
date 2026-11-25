@@ -200,7 +200,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
   double _startSec = 0;
   double _endSec = 25;
-  double _maxSec = 1800; // 30 minutes max slider range
+  double _maxSec = 1800;
 
   final TextEditingController _startCtrl = TextEditingController(text: "00:00");
   final TextEditingController _endCtrl = TextEditingController(text: "00:25");
@@ -211,7 +211,7 @@ class _EditorScreenState extends State<EditorScreen> {
   Offset screenPos = const Offset(0.35, 0.12);
   Size screenSize = const Size(0.60, 0.75);
 
-  bool _editBoxes = false; // False = video play/touch kar sakte hain, True = boxes move/resize kar sakte hain
+  bool _editBoxes = false;
   String _camPosition = 'top';
   String _captionStyle = 'speed';
   bool _isProcessing = false;
@@ -452,7 +452,6 @@ class _EditorScreenState extends State<EditorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 16:9 Playable Video + Overlay Crop Boxes
             SizedBox(
               width: screenWidth,
               height: videoHeight,
@@ -482,13 +481,11 @@ class _EditorScreenState extends State<EditorScreen> {
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Minutes:Seconds Display
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -502,8 +499,6 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                     ],
                   ),
-
-                  // Range Slider
                   RangeSlider(
                     values: RangeValues(_startSec, _endSec),
                     min: 0,
@@ -519,8 +514,6 @@ class _EditorScreenState extends State<EditorScreen> {
                       _seekVideoTo(vals.start.toInt());
                     },
                   ),
-
-                  // Manual Type Time Inputs (MM:SS)
                   Row(
                     children: [
                       Expanded(
@@ -551,7 +544,6 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
                   const Text('Facecam Position:', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
@@ -574,9 +566,59 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
                   const Text('Caption Style:', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Wrap(
-           
+                    spacing: 8,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('Red/White Viral'),
+                        selected: _captionStyle == 'speed',
+                        onSelected: (_) => setState(() => _captionStyle = 'speed'),
+               ),
+                      ChoiceChip(
+                        label: const Text('Hormozi Green'),
+                        selected: _captionStyle == 'hormozi',
+                        onSelected: (_) => setState(() => _captionStyle = 'hormozi'),
+                      ),
+                      ChoiceChip(
+                        label: const Text('No Captions'),
+                        selected: _captionStyle == 'none',
+                        onSelected: (_) => setState(() => _captionStyle = 'none'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: _isProcessing ? null : _generateClip,
+                      icon: _isProcessing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Icon(Icons.download),
+                      label: Text(
+                        _isProcessing ? 'Clip Ban Rahi Hai (Wait)...' : 'Generate & Save Clip',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+          

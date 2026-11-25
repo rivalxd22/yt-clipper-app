@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.cut_rounded, size: 72, color: Colors.redAccent),
+            const Icon(Icons.content_cut, size: 72, color: Colors.redAccent),
             const SizedBox(height: 16),
             const Text(
               'YouTube Video Link Paste Karein',
